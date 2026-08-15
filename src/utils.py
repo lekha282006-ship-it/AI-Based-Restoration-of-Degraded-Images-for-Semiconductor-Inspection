@@ -48,8 +48,12 @@ class CombinedLoss(torch.nn.Module):
 
 
 def save_validation_grid(path, degraded, pred, target, n=4):
-    fig, axes = plt.subplots(n, 3, figsize=(9, 3 * n))
-    for i in range(n):
+    sample_count = min(int(n), int(degraded.shape[0]), int(pred.shape[0]), int(target.shape[0]))
+    if sample_count <= 0:
+        raise ValueError('No validation samples available to plot.')
+
+    fig, axes = plt.subplots(sample_count, 3, figsize=(9, 3 * sample_count))
+    for i in range(sample_count):
         d = degraded[i].detach().cpu().numpy()[0]
         p = pred[i].detach().cpu().numpy()[0]
         t = target[i].detach().cpu().numpy()[0]

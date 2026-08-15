@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
 
+from src.dataset import resolve_dataset_dirs
+
 
 def test_dataset_pairing():
-    train_gt = Path(r"C:\Users\Welcome\Downloads\train\train\GT")
-    train_lr = Path(r"C:\Users\Welcome\Downloads\train\train\NoisyLR")
+    train_gt, train_lr = resolve_dataset_dirs()
     assert train_gt.exists(), f"Missing GT dir: {train_gt}"
     assert train_lr.exists(), f"Missing LR dir: {train_lr}"
     gt_files = sorted(p.name for p in train_gt.glob("*.npy"))

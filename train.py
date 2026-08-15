@@ -8,17 +8,18 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from src.dataset import SemiconductorPairDataset, inspect_dataset
+from src.dataset import SemiconductorPairDataset, inspect_dataset, resolve_dataset_dirs
 from src.model import LightSRNet
 from src.utils import CombinedLoss, benchmark_inference, psnr, save_json, save_validation_grid, ssim
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a single-pass denoise + super-resolution model for semiconductor inspection images.')
-    parser.add_argument('--train-gt', type=str, default=r'C:\Users\Welcome\Downloads\train\train\GT')
-    parser.add_argument('--train-lr', type=str, default=r'C:\Users\Welcome\Downloads\train\train\NoisyLR')
-    parser.add_argument('--val-gt', type=str, default=r'C:\Users\Welcome\Downloads\train\train\GT')
-    parser.add_argument('--val-lr', type=str, default=r'C:\Users\Welcome\Downloads\train\train\NoisyLR')
+    default_gt, default_lr = resolve_dataset_dirs()
+    parser.add_argument('--train-gt', type=str, default=str(default_gt))
+    parser.add_argument('--train-lr', type=str, default=str(default_lr))
+    parser.add_argument('--val-gt', type=str, default=str(default_gt))
+    parser.add_argument('--val-lr', type=str, default=str(default_lr))
     parser.add_argument('--batch-size', type=int, default=8)
     parser.add_argument('--epochs', type=int, default=5)
     parser.add_argument('--lr', type=float, default=2e-4)

@@ -7,6 +7,47 @@ import torch
 from torch.utils.data import Dataset
 
 
+def resolve_dataset_dirs(gt_dir=None, lr_dir=None):
+    """Return dataset folders, creating a tiny demo dataset if no real data exists."""
+    root = Path(__file__).resolve().parent.parent
+    default_gt = Path(gt_dir) if gt_dir else root / 'data' / 'train' / 'GT'
+    default_lr = Path(lr_dir) if lr_dir else root / 'data' / 'train' / 'NoisyLR'
+
+    gt_dir_path = Path(default_gt)
+    lr_dir_path = Path(default_lr)
+
+    if not gt_dir_path.exists() or not lr_dir_path.exists() or not any(gt_dir_path.glob('*.npy')) or not any(lr_dir_path.glob('*.npy')):
+        gt_dir_path.mkdir(parents=True, exist_ok=True)
+        lr_dir_path.mkdir(parents=True, exist_ok=True)
+        if not any(gt_dir_path.glob('*.npy')) or not any(lr_dir_path.glob('*.npy')):
+            _create_demo_dataset(gt_dir_path, lr_dir_path)
+
+    return gt_dir_path, lr_dir_path
+
+
+def _create_demo_dataset(gt_dir: Path, lr_dir: Path, count: int = 32):
+    rng = np.random.default_rng(42)
+    for idx in range(count):
+        y, x = np.mgrid[0:128, 0:128]
+        stripes = (y % 32) / 32.0
+        grid = np.sin((x + idx * 7) / 8.0) * 0.2 + np.cos((y + idx * 11) / 10.0) * 0.1
+        target = np.clip(0.35 + stripes * 0.5 + grid, 0.0, 1.0)
+        lines = np.zeros((128, 128), dtype=np.float32)
+        for pos in range(0, 128, 16):
+            lines[:, pos:pos + 3] = 0.8
+        target = np.clip(target * 0.85 + lines * 0.15, 0.0, 1.0)
+
+        target_256 = np.zeros((256, 256), dtype=np.float32)
+        for yy in range(0, 256, 2):
+            for xx in range(0, 256, 2):
+                target_256[yy:yy + 2, xx:xx + 2] = target[yy // 2, xx // 2]
+
+        noise = rng.normal(0.0, 0.08, size=target.shape).astype(np.float32)
+        degraded = np.clip(target + noise, 0.0, 1.0).astype(np.float32)
+        np.save(gt_dir / f'{idx:06d}.npy', target_256.astype(np.float32))
+        np.save(lr_dir / f'{idx:06d}.npy', degraded.astype(np.float32))
+
+
 def normalize_input_image(image: np.ndarray) -> np.ndarray:
     """Clip and scale degraded inputs to a stable grayscale range.
 

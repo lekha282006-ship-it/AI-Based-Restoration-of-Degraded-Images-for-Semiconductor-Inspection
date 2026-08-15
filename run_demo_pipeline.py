@@ -5,14 +5,13 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset
 
-from src.dataset import SemiconductorPairDataset
+from src.dataset import SemiconductorPairDataset, resolve_dataset_dirs
 from src.model import LightSRNet
 from src.utils import CombinedLoss, psnr, save_validation_grid, ssim
 
 
 def main():
-    train_gt = r'C:\Users\Welcome\Downloads\train\train\GT'
-    train_lr = r'C:\Users\Welcome\Downloads\train\train\NoisyLR'
+    train_gt, train_lr = resolve_dataset_dirs()
 
     train_ds = SemiconductorPairDataset(train_gt, train_lr, split='train', val_fraction=0.1, augment=True)
     val_ds = SemiconductorPairDataset(train_gt, train_lr, split='val', val_fraction=0.1, augment=False)

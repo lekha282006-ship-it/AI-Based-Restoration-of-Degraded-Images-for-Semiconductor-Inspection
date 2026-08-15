@@ -1,0 +1,8 @@
+{
+  "train_loss": 0.6620396375656128,
+  "val_psnr": 6.710713505744934,
+  "val_ssim": 0.011492382984951501,
+  "num_train_samples": 10,
+  "num_val_samples": 2,
+  "device": "cpu"
+}
