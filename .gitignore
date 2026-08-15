@@ -4,5 +4,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.npy
-results/
-checkpoints/
+!results/
+!results/*.png
+!results/**/*.png
+!checkpoints/
+!checkpoints/*.pth

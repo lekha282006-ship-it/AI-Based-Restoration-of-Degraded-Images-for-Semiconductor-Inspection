@@ -86,7 +86,11 @@ This checks the model on previously unseen semiconductor defect patterns and sav
 
 ## 5. Judge-facing screenshots and visual gallery
 
-The following images are useful for presentation slides and project review screens:
+The validation screenshot below is directly embedded in the project README so reviewers can see the restoration quality on the GitHub page itself.
+
+![Validation comparison grid for semiconductor restoration](results/val_grid_demo.png)
+
+The following outputs are useful for presentation slides and project review screens:
 
 - `results/val_grid_demo.png`: side-by-side degraded / restored / target comparison for validation
 - `results/test_ood_predictions/`: restored predictions on the held-out semiconductor test folder
@@ -100,14 +104,7 @@ A typical slide-ready set for a reviewer is:
 4. Validation metric summary (PSNR / SSIM / LPIPS)
 5. Generalization example on external unseen patterns
 
-You can add these to the repository or your presentation deck as PNG exports from the generated files. Example structure:
-
-```text
-results/
-  val_grid_demo.png
-  evaluation_quick/metrics.json
-  test_ood_predictions/
-```
+You can reuse the PNG files in this repository or export additional screenshots for your final PPT deck.
 
 ## 6. Output artifacts
 
