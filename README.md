@@ -84,7 +84,32 @@ This checks the model on previously unseen semiconductor defect patterns and sav
 
 > Note: the public test folder does not include paired GT labels, so the generalization proof is reported as a qualitative held-out inference check rather than a numeric OOD benchmark with PSNR/SSIM/LPIPS on unseen labels.
 
-## 5. Output artifacts
+## 5. Judge-facing screenshots and visual gallery
+
+The following images are useful for presentation slides and project review screens:
+
+- `results/val_grid_demo.png`: side-by-side degraded / restored / target comparison for validation
+- `results/test_ood_predictions/`: restored predictions on the held-out semiconductor test folder
+- `results/evaluation_quick/`: quick folder-level evaluation snapshots with metrics summary
+
+A typical slide-ready set for a reviewer is:
+
+1. Input degraded semiconductor image
+2. Model output after restoration
+3. Ground-truth target comparison
+4. Validation metric summary (PSNR / SSIM / LPIPS)
+5. Generalization example on external unseen patterns
+
+You can add these to the repository or your presentation deck as PNG exports from the generated files. Example structure:
+
+```text
+results/
+  val_grid_demo.png
+  evaluation_quick/metrics.json
+  test_ood_predictions/
+```
+
+## 6. Output artifacts
 
 - `checkpoints/demo_model.pth`: trained weights
 - `results/validation_summary.json`: validation metrics from the demo training pipeline
@@ -94,7 +119,7 @@ This checks the model on previously unseen semiconductor defect patterns and sav
 - `results/test_ood_predictions/`: restored predictions on the external held-out test set
 - `submission_notes.md`: project summary for review
 
-## 6. Verified status
+## 7. Verified status
 
 The project has been validated on the real dataset with successful runs for:
 
@@ -106,6 +131,6 @@ The project has been validated on the real dataset with successful runs for:
 - folder-level evaluation with LPIPS, SSIM, and PSNR
 - held-out folder inference on unseen test inputs
 
-## 7. Environment note
+## 8. Environment note
 
 This workspace is CPU-only, so the experiments were run on CPU rather than CUDA. The project is therefore validated as a compact, working restoration pipeline rather than as a GPU-optimized production benchmark.
