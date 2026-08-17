@@ -47,7 +47,29 @@ The degraded inputs may exceed the nominal `[0, 1]` range because of noise. The 
 
 The model (`LightSRNet`) is a compact residual CNN with instance normalization and a pixel-shuffle upscaling head. It's intentionally lightweight to allow reasonable CPU execution time while still performing restoration in a single pass.
 
-## 5. Output Artifacts
+## 5. Judge-facing screenshots and visual gallery
+
+The validation screenshot below is directly embedded in the project README so reviewers can see the restoration quality on the GitHub page itself.
+
+![Validation comparison grid for semiconductor restoration](results/val_grid_demo.png)
+
+The following outputs are useful for presentation slides and project review screens:
+
+- `results/val_grid_demo.png`: side-by-side degraded / restored / target comparison for validation
+- `results/test_ood_predictions/`: restored predictions on the held-out semiconductor test folder
+- `results/evaluation_quick/`: quick folder-level evaluation snapshots with metrics summary
+
+A typical slide-ready set for a reviewer is:
+
+1. Input degraded semiconductor image
+2. Model output after restoration
+3. Ground-truth target comparison
+4. Validation metric summary (PSNR / SSIM / LPIPS)
+5. Generalization example on external unseen patterns
+
+You can reuse the PNG files in this repository or export additional screenshots for your final PPT deck.
+
+## 6. Output Artifacts
 
 - `models/demo_model.pth`: Pretrained weights loaded by `run.py`.
 - `run.py`: The main inference script for generating `.npy` files.
