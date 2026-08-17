@@ -4,130 +4,51 @@ This project restores degraded semiconductor inspection images by learning a dir
 
 ## 1. Project objective
 
-The goal is to restore degraded semiconductor wafer or inspection images so that hidden structural features become visually clearer and more usable for downstream inspection. The implemented model is designed for a compact, fast restoration pipeline suitable for CPU-only experimentation and validation.
+The goal is to restore degraded semiconductor wafer or inspection images so that hidden structural features become visually clearer and more usable for downstream inspection. The implemented model is designed for a compact, fast restoration pipeline.
 
-## 2. Dataset and split
+## 2. Setup and Requirements
 
-The real attached dataset is organized as follows:
+The code has been packaged to run seamlessly in an offline environment (e.g., for Hackathon evaluation). 
 
-- `train/train/NoisyLR/`: noisy low-resolution grayscale `.npy` files
-- `train/train/GT/`: clean high-resolution grayscale `.npy` files
-- `Test_NoisyLR/NoisyLR/`: held-out noisy inputs not used in the training split
-
-The files are paired by filename stem, for example `000000.npy` in both the noisy and GT folders. The training pipeline uses a validation split from the training folder, while the external test folder is used to test generalization on previously unseen semiconductor structures.
-
-## 3. Preprocessing and model
-
-The degraded inputs may exceed the nominal `[0, 1]` range because of noise. The preprocessing therefore applies:
-
-- clipping to `[0.0, 1.5]`
-- scaling by `1.5`
-
-This keeps the network numerically stable while preserving the artifact structure that must be removed.
-
-The model is a compact residual CNN with:
-
-- residual blocks
-- instance normalization
-- pixel-shuffle upscaling head
-- final output clamp to `[0, 1]`
-
-This is intentionally lightweight to allow reasonable CPU execution time while still performing restoration in a single pass.
-
-## 4. Reproduction steps for a judge
-
-### 4.1 Setup
-
-From the project root:
+Install dependencies from the provided `requirements.txt`:
 
 ```bash
 python -m venv .venv
+# On Windows:
 .venv\Scripts\python.exe -m pip install -U pip
 .venv\Scripts\python.exe -m pip install -r requirements.txt
+# On Linux/macOS:
+# source .venv/bin/activate
+# pip install -r requirements.txt
 ```
 
-### 4.2 Train the model
+## 3. Execution (Hackathon Submission Entry Point)
 
+The primary entry point for inference is `run.py`. This script complies with all execution constraints:
+- Loads weights offline from the `models/` directory.
+- Dynamically selects GPU (`cuda`) if available, else CPU.
+- Automatically handles NaN or Inf values in the inputs or outputs.
+- Ensures outputs are strictly clipped to the `[0.0, 1.0]` range.
+
+**Command:**
 ```bash
-.venv\Scripts\python.exe train.py --epochs 5 --batch-size 8 --lr 2e-4
+python run.py <input-dir> <output-dir>
 ```
 
-This produces a checkpoint in `checkpoints/demo_model.pth` and writes validation summaries under `results/`.
-
-### 4.3 Run a single-image restoration
-
+**Example:**
 ```bash
-.venv\Scripts\python.exe inference.py --input-path "C:\path\to\noisy.npy" --output-path "results\restored.npy" --checkpoint "checkpoints\demo_model.pth"
+python run.py data/Test_NoisyLR/NoisyLR results/restored_output
 ```
+*Note: The script automatically creates `<output-dir>` if it does not exist.*
 
-### 4.4 Run folder-level evaluation on paired train data
+## 4. Model Architecture & Preprocessing
 
-```bash
-.venv\Scripts\python.exe evaluate.py --input-dir "C:\Users\Welcome\Downloads\train\train\NoisyLR" --gt-dir "C:\Users\Welcome\Downloads\train\train\GT" --checkpoint "checkpoints\demo_model.pth" --output-dir "results\evaluation"
-```
+The degraded inputs may exceed the nominal `[0, 1]` range because of noise. The preprocessing therefore applies clipping to `[0.0, 1.5]` and scaling by `1.5`. This keeps the network numerically stable while preserving the artifact structure that must be removed.
 
-Optional quick validation on a small subset:
+The model (`LightSRNet`) is a compact residual CNN with instance normalization and a pixel-shuffle upscaling head. It's intentionally lightweight to allow reasonable CPU execution time while still performing restoration in a single pass.
 
-```bash
-.venv\Scripts\python.exe evaluate.py --input-dir "C:\Users\Welcome\Downloads\train\train\NoisyLR" --gt-dir "C:\Users\Welcome\Downloads\train\train\GT" --checkpoint "checkpoints\demo_model.pth" --output-dir "results\evaluation_quick" --max-samples 2
-```
+## 5. Output Artifacts
 
-### 4.5 Run unseen-structure generalization check
-
-This is the key OOD/generalization proof in the project. The model is trained on the paired train split and then evaluated on the external `Test_NoisyLR/NoisyLR` folder without any retraining or fine-tuning.
-
-```bash
-.venv\Scripts\python.exe inference.py --input-dir "C:\Users\Welcome\Downloads\Test_NoisyLR\NoisyLR" --output-dir "results\test_ood_predictions" --checkpoint "checkpoints\demo_model.pth"
-```
-
-This checks the model on previously unseen semiconductor defect patterns and saves restored outputs for all files in the external folder. Because this folder is not used in the optimization phase and contains different degraded patterns from the training data, the run serves as an explicit generalization test.
-
-> Note: the public test folder does not include paired GT labels, so the generalization proof is reported as a qualitative held-out inference check rather than a numeric OOD benchmark with PSNR/SSIM/LPIPS on unseen labels.
-
-## 5. Judge-facing screenshots and visual gallery
-
-The validation screenshot below is directly embedded in the project README so reviewers can see the restoration quality on the GitHub page itself.
-
-![Validation comparison grid for semiconductor restoration](results/val_grid_demo.png)
-
-The following outputs are useful for presentation slides and project review screens:
-
-- `results/val_grid_demo.png`: side-by-side degraded / restored / target comparison for validation
-- `results/test_ood_predictions/`: restored predictions on the held-out semiconductor test folder
-- `results/evaluation_quick/`: quick folder-level evaluation snapshots with metrics summary
-
-A typical slide-ready set for a reviewer is:
-
-1. Input degraded semiconductor image
-2. Model output after restoration
-3. Ground-truth target comparison
-4. Validation metric summary (PSNR / SSIM / LPIPS)
-5. Generalization example on external unseen patterns
-
-You can reuse the PNG files in this repository or export additional screenshots for your final PPT deck.
-
-## 6. Output artifacts
-
-- `checkpoints/demo_model.pth`: trained weights
-- `results/validation_summary.json`: validation metrics from the demo training pipeline
-- `results/val_grid_demo.png`: validation comparison grid
-- `results/inference_sample.npy`: example restored output
-- `results/evaluation/metrics.json`: PSNR/SSIM/LPIPS summary for paired validation folders
-- `results/test_ood_predictions/`: restored predictions on the external held-out test set
-- `submission_notes.md`: project summary for review
-
-## 7. Verified status
-
-The project has been validated on the real dataset with successful runs for:
-
-- dataset pairing validation
-- model forward pass
-- training loop and checkpoint saving
-- validation metric generation
-- single-image inference
-- folder-level evaluation with LPIPS, SSIM, and PSNR
-- held-out folder inference on unseen test inputs
-
-## 8. Environment note
-
-This workspace is CPU-only, so the experiments were run on CPU rather than CUDA. The project is therefore validated as a compact, working restoration pipeline rather than as a GPU-optimized production benchmark.
+- `models/demo_model.pth`: Pretrained weights loaded by `run.py`.
+- `run.py`: The main inference script for generating `.npy` files.
+- `requirements.txt`: Python dependencies.
